@@ -1,9 +1,7 @@
 package br.unb.cic.permutation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -29,20 +27,6 @@ public class Factorizations {
     }
 
     public static void main(String[] args) {
-        val unicycles = new TreeSet<Cycle>();
-        Generator.permutation(0,1,2,3,4).simple()
-                        .forEach(p -> {
-                            val pi = Cycle.of("(" + p.stream()
-                                    .map(Object::toString)
-                                    .collect(Collectors.joining(",")) + ")");
-                            val sigma = CANONICAL_LONG_CYCLES[5];
-                            val spi = sigma.times(pi.getInverse());
-                            if (spi.size() == 1 && spi.asNCycle().size() == 5) {
-                                unicycles.add(pi);
-                            }
-                        });
-        unicycles.forEach(System.out::println);
-        System.out.println("----------");
         unicycles(Integer.parseInt(args[0]));
     }
 
@@ -56,8 +40,8 @@ public class Factorizations {
         val fixedNPlus1 = Cycle.of(n + 1);
 
         val unicycles = new TreeSet<Cycle>();
-        val memo = new HashMap<Permutation, List<Pair<Cycle, Permutation>>>();
-        factorizations(CANONICAL_LONG_CYCLES[n + 2], memo)
+
+        factorizations(CANONICAL_LONG_CYCLES[n + 2])
                 .forEach(f -> {
                     val delta = (MulticyclePermutation) f.getRight();
                     delta.remove(fixedZero);
@@ -68,49 +52,43 @@ public class Factorizations {
         unicycles.forEach(System.out::println);
     }
 
-    public static List<Pair<Cycle, Permutation>> factorizations(Permutation tau,
-            final Map<Permutation, List<Pair<Cycle, Permutation>>> memo) {
-        if (memo.containsKey(tau)) {
-            return memo.get(tau);
-        }
-
-        if (tau.image(0) == 0) {
-            return Collections.emptyList();
+    public static List<Pair<Cycle, Permutation>> factorizations(final Permutation tau) {
+        if (tau.isEven()) {
+            throw new RuntimeException("Tau must be odd");
         }
 
         val n = tau.getMaxSymbol();
 
-        if (n == 1) {
-            return List.of(ImmutablePair.of(Cycle.of(0, 1),
-                    new MulticyclePermutation(List.of(Cycle.of(0), Cycle.of(1)))));
-        }
+        List<Pair<Cycle, Permutation>> factorizations = new ArrayList<>();
 
-        val factorizations = new ArrayList<Pair<Cycle, Permutation>>();
+        if (tau.image(0) != 0) {
+            if (n == 1) {
+                factorizations.add(ImmutablePair.of(Cycle.of(0, 1),
+                        new MulticyclePermutation(List.of(Cycle.of(0), Cycle.of(1)))));
+            } else {
+                val tauZero = tau.getInverse().image(0);
 
-        val tauZero = tau.getInverse().image(0);
-        val conjugator = Cycle.of(tauZero, n);
-        tau = tau.conjugateBy(conjugator);
+                val conjugator = Cycle.of(tauZero, tau.getMaxSymbol());
+                val tauPrime = tau.conjugateBy(conjugator);
 
-        for (int h = 1; h < n; h++) {
-            if (h != tau.image(0)) {
-                val t = ((MulticyclePermutation) Cycle.of(n, h, 0).times(tau));
-                t.remove(Cycle.of(n));
+                for (int h = 1; h < n; h++) {
+                    if (h != tauPrime.image(0)) {
+                        val t = ((MulticyclePermutation) Cycle.of(n, h, 0).times(tauPrime));
+                        t.remove(Cycle.of(n));
 
-                for (val f : factorizations(t, memo)) {
-                    val c = f.getLeft();
-                    val d = f.getRight();
+                        for (val f : factorizations(t)) {
+                            val c = f.getLeft();
+                            val d = f.getRight();
 
-                    val gamma = Cycle.of(n, 0).times(c).asNCycle();
-                    val delta = Cycle.of(n, h).times(d);
+                            val gamma = Cycle.of(n, 0).times(c).conjugateBy(conjugator).asNCycle();
+                            val delta = Cycle.of(n, h).times(d).conjugateBy(conjugator);
 
-                    factorizations.add(ImmutablePair.of(
-                            gamma.conjugateBy(conjugator).asNCycle(),
-                            delta.conjugateBy(conjugator)));
+                            factorizations.add(ImmutablePair.of(gamma.asNCycle(), delta));
+                        }
+                    }
                 }
             }
         }
-
-        memo.put(tau, factorizations);
 
         return factorizations;
     }

@@ -21,4 +21,6 @@ public interface Permutation {
     int image(int a);
 
     int getMaxSymbol();
+
+    boolean isEven();
 }

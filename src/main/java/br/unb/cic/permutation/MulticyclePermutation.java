@@ -105,6 +105,11 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
         return getSymbols().stream().max(Comparator.comparing(Function.identity())).orElse(-1);
     }
 
+    @Override
+    public boolean isEven() {
+        return this.cycles.stream().mapToInt(c -> c.isEven() ? 1 : -1).reduce(1, (a,b) -> a * b) == 1;
+    }
+
     public List<Cycle> getNonTrivialCycles() {
         return this.stream().filter(c -> c.size() > 1).collect(Collectors.toList());
     }
