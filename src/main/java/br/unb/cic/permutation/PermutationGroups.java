@@ -13,7 +13,7 @@ public class PermutationGroups {
         return computeProduct(true, permutations);
     }
 
-    public static MulticyclePermutation computeProduct(final boolean include1Cycle, final Permutation... p) {
+    public static MulticyclePermutation computeProduct(final boolean includeFixedSymbols, final Permutation... p) {
         var n = 0;
         for (val p1 : p) {
             if (p1 instanceof Cycle) {
@@ -24,7 +24,7 @@ public class PermutationGroups {
                 }
             }
         }
-        return computeProduct(include1Cycle, n + 1, p);
+        return computeProduct(includeFixedSymbols, n + 1, p);
     }
 
     public static MulticyclePermutation computeProduct(final boolean include1Cycle, final int n, final Permutation... permutations) {

@@ -27,10 +27,6 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
     public MulticyclePermutation() {
     }
 
-    public MulticyclePermutation(final String permutation) {
-        of(permutation);
-    }
-
     private void of(final String permutation) {
         if (!permutation.contains("(")) {
             this.add(Cycle.of(permutation));
@@ -40,10 +36,6 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
                 this.add(Cycle.of(matcher.group(1)));
             }
         }
-    }
-
-    public MulticyclePermutation(final Collection<Cycle> cycles) {
-        this.addAll(cycles);
     }
 
     @Override

@@ -4,12 +4,10 @@ public interface Permutation {
 
     Permutation getInverse();
 
-    int size();
-
     Cycle asNCycle();
 
-    default MulticyclePermutation conjugateBy(final Permutation conjugator) {
-        return PermutationGroups.computeProduct(true, conjugator, this, conjugator.getInverse());
+    default Permutation conjugateBy(final Permutation conjugator) {
+        return PermutationGroups.computeProduct(conjugator, this, conjugator.getInverse());
     }
 
     default Permutation times(final Permutation operand) {

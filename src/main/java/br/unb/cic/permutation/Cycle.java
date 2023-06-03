@@ -136,6 +136,9 @@ public class Cycle implements Permutation, Comparable<Cycle> {
     }
 
     public int image(final int a) {
+        if (symbolIndexes[a] == -1) {
+            return a;
+        }
         return symbols[(symbolIndexes[a] + 1) % symbols.length];
     }
 
@@ -169,7 +172,6 @@ public class Cycle implements Permutation, Comparable<Cycle> {
         return (symbol >= 0 && symbol <= symbolIndexes.length - 1) && symbolIndexes[symbol] != -1;
     }
 
-    @Override
     public int size() {
         return symbols.length;
     }
@@ -177,5 +179,13 @@ public class Cycle implements Permutation, Comparable<Cycle> {
     @Override
     public Cycle asNCycle() {
         return this;
+    }
+
+    @Override
+    public Permutation conjugateBy(final Permutation conjugator) {
+        if (this.size() == 1) {
+            return Cycle.of(conjugator.image(this.symbols[0]));
+        }
+        return PermutationGroups.computeProduct(false, conjugator, this, conjugator.getInverse());
     }
 }
