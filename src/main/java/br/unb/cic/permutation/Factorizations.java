@@ -51,7 +51,7 @@ public class Factorizations {
 
     public static List<Pair<Cycle, Permutation>> factorizations(final Permutation tau) {
         if (tau.isEven()) {
-            throw new RuntimeException("Tau must be odd");
+            throw new RuntimeException("Tau must be an odd permutation");
         }
 
         val n = tau.getMaxSymbol();
