@@ -31,11 +31,8 @@ public class Factorizations {
     }
 
     private static void unicycles(final int n) {
-        val conjugator = new MulticyclePermutation();
-        for (int i = 1; i <= n + 1; i++) {
-            conjugator.add(Cycle.of(i - 1, i));
-        }
-
+        val conjugator = CANONICAL_LONG_CYCLES[n + 1].getInverse();
+        
         val fixedZero = Cycle.of(0);
         val fixedNPlus1 = Cycle.of(n + 1);
 
@@ -80,10 +77,11 @@ public class Factorizations {
                             val c = f.getLeft();
                             val d = f.getRight();
 
-                            val gamma = Cycle.of(n, 0).times(c).conjugateBy(conjugator).asNCycle();
-                            val delta = Cycle.of(n, h).times(d).conjugateBy(conjugator);
+                            val gamma = Cycle.of(n, 0).times(c);
+                            val delta = Cycle.of(n, h).times(d);
 
-                            factorizations.add(ImmutablePair.of(gamma.asNCycle(), delta));
+                            factorizations.add(ImmutablePair.of(gamma.conjugateBy(conjugator).asNCycle(), 
+                                                                delta.conjugateBy(conjugator)));
                         }
                     }
                 }
