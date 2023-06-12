@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import lombok.val;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.paukov.combinatorics3.Generator;
 
 public class Factorizations {
 
