@@ -135,6 +135,16 @@ public class Cycle implements Permutation, Comparable<Cycle> {
         return this.size() % 2 == 1;
     }
 
+    @Override
+    public int getMinMovedSymbol() {
+        return minSymbol;
+    }
+
+    @Override
+    public boolean isIdentity() {
+        return size() <= 1;
+    }
+
     public int image(final int a) {
         if (symbolIndexes[a] == -1) {
             return a;

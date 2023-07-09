@@ -21,4 +21,10 @@ public interface Permutation {
     int getMaxSymbol();
 
     boolean isEven();
+
+    int getMinMovedSymbol();
+
+    boolean isIdentity();
+
+    int getMinSymbol();
 }

@@ -27,7 +27,7 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
     public MulticyclePermutation() {
     }
 
-    private void of(final String permutation) {
+    public MulticyclePermutation(final String permutation) {
         if (!permutation.contains("(")) {
             this.add(Cycle.of(permutation));
         } else {
@@ -99,7 +99,13 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
 
     @Override
     public boolean isEven() {
-        return this.cycles.stream().mapToInt(c -> c.isEven() ? 1 : -1).reduce(1, (a,b) -> a * b) == 1;
+        return this.cycles.stream().mapToInt(c -> c.isEven() ? 1 : -1).reduce(1, (a, b) -> a * b) == 1;
+    }
+
+    @Override
+    public int getMinMovedSymbol() {
+        val min = this.stream().filter(c -> c.size() > 1).mapToInt(Cycle::getMinMovedSymbol).min();
+        return min.orElseThrow(() -> new IllegalStateException("All symbols fixed"));
     }
 
     public List<Cycle> getNonTrivialCycles() {
@@ -109,6 +115,15 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
     @Override
     public int size() {
         return cycles.size();
+    }
+
+    public boolean isIdentity() {
+        return this.isEmpty() || (stream().filter((cycle) -> cycle.size() == 1).count() == this.size());
+    }
+
+    @Override
+    public int getMinSymbol() {
+        return this.stream().mapToInt(Cycle::getMinSymbol).min().orElse(0);
     }
 
     @Override

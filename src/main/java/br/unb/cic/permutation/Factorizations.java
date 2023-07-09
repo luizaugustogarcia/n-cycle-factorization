@@ -1,11 +1,9 @@
 package br.unb.cic.permutation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Stack;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.val;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,71 +24,70 @@ public class Factorizations {
     }
 
     public static void main(String[] args) {
-        unicycles(Integer.parseInt(args[0]));
+        unicycles(4);
     }
 
     private static void unicycles(final int n) {
-        val conjugator = CANONICAL_LONG_CYCLES[n + 2].getInverse();
-
-        val fixedZero = Cycle.of(0);
-        val fixedNPlus1 = Cycle.of(n + 1);
-
-        factorizations(CANONICAL_LONG_CYCLES[n + 2])
-                .forEach(f -> {
-//                    val delta = (MulticyclePermutation) f.getRight();
-//                    delta.remove(fixedZero);
-//                    val u = delta.conjugateBy(CANONICAL_LONG_CYCLES[n + 2].getInverse());
-//                    u.remove(fixedNPlus1);
-//                    unicycles.add(u.asNCycle());
-                    System.out.println(f);
-//                    System.out.println(f.getLeft().stream().map(c -> c.conjugateBy(conjugator).toString()).collect(Collectors.joining()) + ", " +
-//                                       f.getRight().stream().map(c -> c.conjugateBy(conjugator).toString()).collect(Collectors.joining()));
-                });
+        factorizations(CANONICAL_LONG_CYCLES[n + 1]).forEach(System.out::println);
     }
 
-    public static List<Pair<Stack<Cycle>, Stack<Cycle>>> factorizations(Permutation tau) {
-        if (tau.isEven()) {
-            throw new RuntimeException("Tau must be odd");
+    public static List<Pair<Permutation, Permutation>> factorizations(final Permutation sigma) {
+        if (!sigma.isEven()) {
+            throw new RuntimeException("Tau must be even");
         }
 
-        val n = tau.getMaxSymbol();
+        val factorizations = new ArrayList<Pair<Permutation, Permutation>>();
 
-        List<Pair<Stack<Cycle>, Stack<Cycle>>> factorizations = new ArrayList<>();
+        if (sigma.isIdentity()) {
+            factorizations.add(ImmutablePair.of(Cycle.of(0), Cycle.of(0)));
+        } else {
+            if (sigma instanceof MulticyclePermutation) {
+                val _sigma = (MulticyclePermutation) sigma;
+                if (_sigma.size() == 2 && _sigma.getSymbols().size() == 4 && _sigma.stream().allMatch(c -> c.size() == 2)) {
+                    val _1 = _sigma.getNonTrivialCycles().get(0).get(0);
+                    val _2 = _sigma.getNonTrivialCycles().get(0).get(1);
+                    val _3 = _sigma.getNonTrivialCycles().get(1).get(0);
+                    val _4 = _sigma.getNonTrivialCycles().get(1).get(1);
 
-        if (tau.image(0) != 0) {
-            if (n == 1) {
-                factorizations.add(ImmutablePair.of(
-                        newStackAndPush(Cycle.of(0, 1)),
-                        newStackAndPush(Cycle.of(0), Cycle.of(1))));
-            } else {
-                val tauZero = tau.getInverse().image(0);
-                val conjugator = Cycle.of(tauZero, n);
-                val tauPrime = tau.conjugateBy(conjugator);
+                    //(234)(134)(234)(123)
 
-                for (int h = 1; h < n; h++) {
-                    if (h != tauPrime.image(0)) {
-                        val t = ((MulticyclePermutation) Cycle.of(n, h, 0).times(tauPrime));
-                        t.remove(Cycle.of(n));
+                    val pair = ImmutablePair.of(Cycle.of(_2, _3, _4).times(Cycle.of(_1, _2, _3).conjugateBy(Cycle.of(_2, _3, _4))),
+                            Cycle.of(_2, _3, _4).times(Cycle.of(_1, _2, _3)));
 
-                        for (val f : factorizations(t)) {
-                            val c = f.getLeft();
-                            val d = f.getRight();
+                    factorizations.add(pair);
 
-                            val gamma = newStackAndPush();
-                            for (val cPrime: c) {
-                                gamma.push(cPrime.conjugateBy(conjugator).asNCycle());
-                            }
-                            gamma.push(Cycle.of(n, 0).conjugateBy(conjugator).asNCycle());
+                    return factorizations;
+                }
+            }
 
-                            val delta = newStackAndPush();
-                            for (val dPrime: d) {
-                                if (dPrime.size() == 1) {
-                                    delta.push(Cycle.of(conjugator.image(dPrime.getMaxSymbol())));
-                                } else {
-                                    delta.push(dPrime.conjugateBy(conjugator).asNCycle());
-                                }
-                            }
-                            delta.push(Cycle.of(n, h).conjugateBy(conjugator).asNCycle());
+            val n = sigma.getMaxSymbol();
+
+            val a = sigma.getMinMovedSymbol();
+
+            val b = a + 1;
+
+            for (int k = a + 1; k <= n; k++) {
+                if (k == b) {
+                    continue;
+                }
+
+                // o inverso de _3CycleFactor deve ser crescente e aplicável à \sigma
+                val _3CycleFactor = Cycle.of(a, k, b);
+
+                var sigmaPrime = ((MulticyclePermutation) _3CycleFactor.times(sigma));
+
+                if (breaksInto3Cycles(sigma, sigmaPrime)) {
+                    if (isProduct2Disjoint2Cycles(sigmaPrime) || is2Move(sigmaPrime)) {
+                        final var removeSymbols = IntStream.range(0, b).<String>mapToObj(i -> "(" + i + ")").collect(Collectors.joining());
+
+                        sigmaPrime = new MulticyclePermutation(sigmaPrime.toString().replace(removeSymbols, ""));
+
+                        for (val f : factorizations(sigmaPrime)) {
+                            val d = f.getLeft();
+                            val c = f.getRight();
+
+                            val gamma = _3CycleFactor.times(d.conjugateBy(_3CycleFactor));
+                            val delta = _3CycleFactor.times(c);
 
                             factorizations.add(ImmutablePair.of(gamma, delta));
                         }
@@ -102,11 +99,31 @@ public class Factorizations {
         return factorizations;
     }
 
-    private static Stack<Cycle> newStackAndPush(final Cycle... cycle) {
-        val stack = new Stack<Cycle>();
-        for (val c : cycle) {
-            stack.push(c);
+    private static boolean is2Move(MulticyclePermutation sigmaPrime) {
+        return sigmaPrime.stream()
+                .allMatch(Cycle::isEven);
+    }
+
+    private static boolean isProduct2Disjoint2Cycles(MulticyclePermutation sigmaPrime) {
+        if (!sigmaPrime.isIdentity()) {
+            final var disjointCycles = new MulticyclePermutation(sigmaPrime.stream()
+                    .map(c -> c.size() == 1 ? "" : c.toString())
+                    .collect(Collectors.joining()));
+            if (disjointCycles.size() == 2 && disjointCycles.getSymbols().size() == 4) {
+                return true;
+            }
         }
-        return stack;
+        return false;
+    }
+
+    private static boolean breaksInto3Cycles(Permutation sigma, MulticyclePermutation sigmaPrime) {
+        return numberOfCycles(sigmaPrime) == numberOfCycles(sigma.times(Cycle.of(0))) + 2;
+    }
+
+    private static int numberOfCycles(final Permutation permutation) {
+        if (permutation instanceof MulticyclePermutation) {
+            return ((MulticyclePermutation) permutation).size();
+        }
+        return 1;
     }
 }

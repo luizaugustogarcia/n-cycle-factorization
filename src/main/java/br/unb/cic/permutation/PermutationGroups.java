@@ -4,7 +4,6 @@ import cc.redberry.core.utils.BitArray;
 import cern.colt.list.IntArrayList;
 import lombok.val;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 public class PermutationGroups {
