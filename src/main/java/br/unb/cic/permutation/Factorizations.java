@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 import lombok.val;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.paukov.combinatorics3.Generator;
 
 public class Factorizations {
 
@@ -24,7 +25,7 @@ public class Factorizations {
     }
 
     public static void main(String[] args) {
-        unicycles(4);
+        unicycles(6);
     }
 
     private static void unicycles(final int n) {
@@ -49,17 +50,15 @@ public class Factorizations {
                     val _3 = _sigma.getNonTrivialCycles().get(1).get(0);
                     val _4 = _sigma.getNonTrivialCycles().get(1).get(1);
 
-                    //(234)(134)(234)(123)
-
-                    val pair = ImmutablePair.of(Cycle.of(_2, _3, _4).times(Cycle.of(_1, _2, _3).conjugateBy(Cycle.of(_2, _3, _4))),
-                            Cycle.of(_2, _3, _4).times(Cycle.of(_1, _2, _3)));
-
+                    val pair =
+                            ImmutablePair.of(Cycle.of(1, _2, _4).times(Cycle.of(0, _3, _4)), Cycle.of(0, _4).times(Cycle.of(_2, _3)));
                     factorizations.add(pair);
 
                     return factorizations;
                 }
             }
 
+            // TODO outros 3-cycles devem ser gerados tbm, outros que não apenas têm n
             val n = sigma.getMaxSymbol();
 
             val a = sigma.getMinMovedSymbol();
