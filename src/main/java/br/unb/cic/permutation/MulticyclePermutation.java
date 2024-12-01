@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import lombok.Getter;
 import lombok.val;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -22,6 +24,7 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
 
     private final List<Cycle> cycles = new ArrayList<>();
 
+    @Getter
     private final Set<Integer> symbols = new HashSet<>();
 
     public MulticyclePermutation() {
@@ -97,10 +100,6 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
         return a;
     }
 
-    public Set<Integer> getSymbols() {
-        return symbols;
-    }
-
     public int getMaxSymbol() {
         return getSymbols().stream().max(Comparator.comparing(Function.identity())).orElse(-1);
     }
@@ -145,7 +144,7 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
     }
 
     @Override
-    public <T> T[] toArray(T[] a) {
+    public <T> T[] toArray(final T[] a) {
         return cycles.toArray(a);
     }
 

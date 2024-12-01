@@ -48,18 +48,16 @@ public class Factorizations {
         unicycles.forEach(System.out::println);
     }
 
-    public static List<Pair<Cycle, Permutation>> factorizations(final Permutation tau) {
+    public static Stream<Pair<Cycle, Permutation>> factorizations(final Permutation tau) {
         if (tau.isEven()) {
             throw new RuntimeException("Tau must be an odd permutation");
         }
 
         val n = tau.getMaxSymbol();
 
-        List<Pair<Cycle, Permutation>> factorizations = new ArrayList<>();
-
         if (tau.image(0) != 0) {
             if (n == 1) {
-                factorizations.add(ImmutablePair.of(Cycle.of(0, 1),
+                return Stream.of(Pair.of(Cycle.of(0, 1),
                         new MulticyclePermutation(List.of(Cycle.of(0), Cycle.of(1)))));
             } else {
                 val tauZero = tau.getInverse().image(0);
@@ -67,26 +65,28 @@ public class Factorizations {
                 val conjugator = Cycle.of(tauZero, tau.getMaxSymbol());
                 val tauPrime = tau.conjugateBy(conjugator);
 
-                for (int h = 1; h < n; h++) {
+                return IntStream.range(1, n).boxed().parallel().flatMap(h -> {
                     if (h != tauPrime.image(0)) {
                         val t = ((MulticyclePermutation) Cycle.of(n, h, 0).times(tauPrime));
                         t.remove(Cycle.of(n));
 
-                        for (val f : factorizations(t)) {
+                        return factorizations(t).map(f -> {
                             val c = f.getLeft();
                             val d = f.getRight();
 
                             val gamma = Cycle.of(n, 0).times(c);
                             val delta = Cycle.of(n, h).times(d);
 
-                            factorizations.add(ImmutablePair.of(gamma.conjugateBy(conjugator).asNCycle(), 
-                                                                delta.conjugateBy(conjugator)));
-                        }
+                            return Pair.of(gamma.conjugateBy(conjugator).asNCycle(),
+                                    delta.conjugateBy(conjugator));
+                        });
+                    } else {
+                        return Stream.empty();
                     }
-                }
+                });
             }
         }
 
-        return factorizations;
+        return Stream.empty();
     }
 }

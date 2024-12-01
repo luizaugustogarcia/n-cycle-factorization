@@ -1,13 +1,18 @@
 package br.unb.cic.permutation;
 
 import java.util.Arrays;
+
+import lombok.Getter;
 import lombok.val;
 import org.apache.commons.lang.ArrayUtils;
 
 public class Cycle implements Permutation, Comparable<Cycle> {
+    @Getter
     private final int[] symbols;
     private int[] symbolIndexes;
+    @Getter
     private int minSymbol = -1;
+    @Getter
     private int maxSymbol = -1;
     private Cycle inverse;
     private Integer hashCode;
@@ -31,10 +36,6 @@ public class Cycle implements Permutation, Comparable<Cycle> {
         return new Cycle(symbols);
     }
 
-    public int[] getSymbols() {
-        return symbols;
-    }
-
     private void updateInternalState() {
         for (val symbol : symbols) {
             if (minSymbol == -1 || symbol < minSymbol) {
@@ -52,14 +53,6 @@ public class Cycle implements Permutation, Comparable<Cycle> {
         for (var i = 0; i < symbols.length; i++) {
             symbolIndexes[symbols[i]] = i;
         }
-    }
-
-    public int getMaxSymbol() {
-        return maxSymbol;
-    }
-
-    public int getMinSymbol() {
-        return minSymbol;
     }
 
     @Override
