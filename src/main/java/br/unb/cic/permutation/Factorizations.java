@@ -4,11 +4,15 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lombok.val;
+
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
@@ -42,27 +46,31 @@ public class Factorizations {
     }
 
     private static void unicycles(final int n) {
-        val stopWatch = StopWatch.create();
-        stopWatch.start();
+        val total = new AtomicLong();
 
-        final var total = new AtomicLong();
+        val fixedNPlus1 = Cycle.of(n + 1);
 
         factorizations(CANONICAL_LONG_CYCLES[n + 2])
                 .forEach(f -> {
-                    final var t = total.incrementAndGet();
+                    val t = total.incrementAndGet();
                     if (t % 1_000_000 == 0) {
                         System.out.println(t + " " + Instant.now());
                     }
-//                    val delta = (MulticyclePermutation) f.getRight();
-//                    delta.remove(fixedZero);
-//                    val u = delta.conjugateBy(CANONICAL_LONG_CYCLES[n + 2].getInverse());
-//                    u.remove(fixedNPlus1);
-//                    System.out.println(f);
+
+                    val u = (MulticyclePermutation) f.conjugateBy(CANONICAL_LONG_CYCLES[n + 2].getInverse());
+                    u.remove(fixedNPlus1);
+
+                    val pi = u.asNCycle().getSymbols();
+
+                    if (isCanonical(pi)) {
+                       System.out.println("canonical " + Arrays.toString(pi));
+                       if (getKappaMoves(pi, 2).findAny().isEmpty()) {
+                           throw new RuntimeException("Unicycle " + Arrays.toString(pi) + " has no 2-moves");
+                       }
+                    }
                 });
 
-        stopWatch.stop();
         System.out.println(total);
-        System.out.println(stopWatch.getTime(TimeUnit.SECONDS));
     }
 
     public static Stream<Permutation> factorizations(final Permutation tau) {
@@ -143,5 +151,86 @@ public class Factorizations {
         TRANSPOSITIONS_CACHE.put(a, b, transposition = Cycle.of(a, b));
 
         return transposition;
+    }
+
+    public static boolean isCanonical(final int[] p) {
+        for (int i = 0; i < p.length - 1; i++) {
+            final var rotation = rotate(i, p);
+            if (Arrays.compare(rotation, p) == -1 || Arrays.compare(mirror(rotation), p) == -1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static int[] mirror(final int[] rotation) {
+        final var mirror = new int[rotation.length];
+        for (int i = rotation.length - 1; i >= 1; i--) {
+            mirror[mirror.length - i] = (rotation.length - rotation[i]) % rotation.length;
+        }
+        return mirror;
+    }
+
+    private static int[] rotate(final int i, final int[] c) {
+        if (i == 0) {
+            return c;
+        }
+
+        final var rotation = new int[c.length];
+        rotation[0] = i;
+        for (int j = 1; j < c.length; j++) {
+            rotation[j] = (c[j] + i) % c.length;
+        }
+
+        return startingByZero(rotation);
+    }
+
+    public static int[] startingByZero(final int[] rotation) {
+        if (rotation[0] == 0) {
+            return rotation;
+        }
+
+        final var index = ArrayUtils.indexOf(rotation, 0);
+        final var symbols = new int[rotation.length];
+        System.arraycopy(rotation, index, symbols, 0, symbols.length - index);
+        System.arraycopy(rotation, 0, symbols, symbols.length - index, index);
+
+        return symbols;
+    }
+
+    public static Stream<int[]> getKappaMoves(final int[] pi, final int kappa) {
+        return IntStream.range(0, pi.length - 2)
+                .boxed().flatMap(i -> IntStream.range(i + 1, pi.length - 1)
+                        .boxed().flatMap(j -> IntStream.range(j + 1, pi.length).boxed()
+                                .map(k -> {
+                                    var bonds = 0;
+
+                                    if (isBond(pi, i - 1, j)) {
+                                        bonds++;
+                                    }
+
+                                    if (isBond(pi, k - 1, i)) {
+                                        bonds++;
+                                    }
+
+                                    if (isBond(pi, j - 1, k)) {
+                                        bonds++;
+                                    }
+
+                                    if (bonds == kappa) {
+                                        return new int[]{i, j, k};
+                                    }
+
+                                    return null;
+                                }))).filter(Objects::nonNull);
+    }
+
+    public static boolean isBond(final int[] p, final int i, final int j) {
+        final int n = p.length, iMod = mod(n, i), jMod = mod(n, j);
+        return mod(n, p[iMod] + 1) == mod(n, p[jMod]);
+    }
+
+    private static int mod(int n, int p) {
+        return Math.floorMod(p, n);
     }
 }
