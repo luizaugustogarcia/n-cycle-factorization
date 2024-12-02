@@ -1,10 +1,10 @@
 package br.unb.cic.permutation;
 
-import java.util.Arrays;
-
 import lombok.Getter;
 import lombok.val;
 import org.apache.commons.lang.ArrayUtils;
+
+import java.util.Arrays;
 
 public class Cycle implements Permutation, Comparable<Cycle> {
     @Getter
@@ -53,6 +53,14 @@ public class Cycle implements Permutation, Comparable<Cycle> {
         for (var i = 0; i < symbols.length; i++) {
             symbolIndexes[symbols[i]] = i;
         }
+    }
+
+    public Permutation conjugateBy(final Permutation conjugator) {
+        val conjugate = symbols.clone();
+        for (int i = 0; i < conjugate.length; i++) {
+            conjugate[i] = conjugator.image(conjugate[i]);
+        }
+        return Cycle.of(conjugate);
     }
 
     @Override
@@ -129,6 +137,9 @@ public class Cycle implements Permutation, Comparable<Cycle> {
     }
 
     public int image(final int a) {
+        if (symbolIndexes[a] == -1) {
+            return a;
+        }
         return symbols[(symbolIndexes[a] + 1) % symbols.length];
     }
 

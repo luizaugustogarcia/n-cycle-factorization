@@ -1,22 +1,14 @@
 package br.unb.cic.permutation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import lombok.Getter;
 import lombok.val;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MulticyclePermutation implements Collection<Cycle>, Permutation {
 
@@ -47,6 +39,10 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
 
     public MulticyclePermutation(final Collection<Cycle> cycles) {
         this.addAll(cycles);
+    }
+
+    public Permutation conjugateBy(final Permutation conjugator) {
+        return cycles.stream().map(c -> c.conjugateBy(conjugator)).collect(MulticyclePermutation::new, (c, m) -> c.add((Cycle) m), MulticyclePermutation::addAll);
     }
 
     @Override
@@ -106,7 +102,7 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
 
     @Override
     public boolean isEven() {
-        return this.cycles.stream().mapToInt(c -> c.isEven() ? 1 : -1).reduce(1, (a,b) -> a * b) == 1;
+        return this.cycles.stream().mapToInt(c -> c.isEven() ? 1 : -1).reduce(1, (a, b) -> a * b) == 1;
     }
 
     public List<Cycle> getNonTrivialCycles() {

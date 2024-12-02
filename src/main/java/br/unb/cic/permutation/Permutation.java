@@ -8,7 +8,7 @@ public interface Permutation {
 
     Cycle asNCycle();
 
-    default MulticyclePermutation conjugateBy(final Permutation conjugator) {
+    default Permutation conjugateBy(final Permutation conjugator) {
         return PermutationGroups.computeProduct(true, conjugator, this, conjugator.getInverse());
     }
 
