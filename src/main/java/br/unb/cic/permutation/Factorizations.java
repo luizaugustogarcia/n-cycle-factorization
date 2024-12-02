@@ -1,14 +1,13 @@
 package br.unb.cic.permutation;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-import lombok.val;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.tuple.Pair;
+
+import lombok.val;
 
 public class Factorizations {
 
@@ -30,8 +29,6 @@ public class Factorizations {
     }
 
     private static void unicycles(final int n) {
-        val conjugator = CANONICAL_LONG_CYCLES[n + 1].getInverse();
-        
         val fixedZero = Cycle.of(0);
         val fixedNPlus1 = Cycle.of(n + 1);
 
