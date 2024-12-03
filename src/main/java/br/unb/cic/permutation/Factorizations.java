@@ -6,14 +6,12 @@ import com.google.common.collect.Table;
 import lombok.val;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang3.time.StopWatch;
 
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -95,26 +93,16 @@ public class Factorizations {
                     if (h == tauPrime.image(0)) {
                         return Stream.empty();
                     } else {
-                        val t = ((MulticyclePermutation) getTimes(h, n, tauPrime));
+                        val t = ((MulticyclePermutation) threeCycle(n, h, 0).times(tauPrime));
                         t.remove(fixed(n));
 
-                        return factorizations(t).map(f -> getPermutation(h, f, n, conjugator));
+                        return factorizations(t).map(f -> transposition(n, h).times(f).conjugateBy(conjugator));
                     }
                 });
             }
         }
 
         return result;
-    }
-
-    private static Permutation getPermutation(Integer h, Permutation f, int n, Cycle conjugator) {
-        // TODO optimize - do not multiply and create new cycles, maintain the transpositions
-        return transposition(n, h).times(f).conjugateBy(conjugator);
-    }
-
-    private static Permutation getTimes(Integer h, int n, Permutation tauPrime) {
-        // TODO optimize - do not multiply and create new cycles, maintain the transpositions
-        return threeCycle(n, h, 0).times(tauPrime);
     }
 
     private static Cycle threeCycle(final int a, final int b, final int c) {

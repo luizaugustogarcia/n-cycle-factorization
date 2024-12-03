@@ -162,7 +162,9 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
     @Override
     public boolean remove(final Object o) {
         val cycle = (Cycle) o;
-        Arrays.stream(cycle.getSymbols()).forEach(symbols::remove);
+        for (int i = 0; i < cycle.getSymbols().length; i++) {
+            symbols.remove(cycle.getSymbols()[i]);
+        }
         return cycles.remove(o);
     }
 
@@ -170,7 +172,9 @@ public class MulticyclePermutation implements Collection<Cycle>, Permutation {
     public boolean removeAll(final Collection<?> c) {
         c.forEach(o -> {
             val cycle = (Cycle) o;
-            Arrays.stream(cycle.getSymbols()).forEach(symbols::remove);
+            for (int i = 0; i < cycle.getSymbols().length; i++) {
+                symbols.remove(cycle.getSymbols()[i]);
+            }
         });
         return cycles.removeAll(c);
     }
